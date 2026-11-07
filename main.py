@@ -10,8 +10,30 @@ import json
 
 # ==================== 1. 配置与环境变量 ====================
 RSS_FEEDS = [
+    # ==================== 国内权威与前沿信源 ====================
+    # 机器之心 (国内最顶尖的 AI 垂直媒体之一)
+    "https://www.jiqizhixin.com/rss",
+    # 量子位 (专注于 AI 与前沿科技的专业媒体)
+    "https://www.qbitai.com/feed",
+    # 极客公园 (科技商业与 AI 落地结合)
+    "https://www.geekpark.net/rss",
+
+    # ==================== 海外顶级原厂与研究博客 ====================
+    # OpenAI 官方动态
     "https://openai.com/news/rss.xml",
-    "https://dair.ai/feed.xml",
+    # Anthropic 官方动态 (Claude 背后团队)
+    "https://www.anthropic.com/feed.xml",
+    # Google DeepMind 官方博客
+    "https://deepmind.google/blog/rss.xml",
+    # Meta AI 官方博客 (Llama 系列开源阵地)
+    "https://ai.meta.com/blog/rss.xml",
+
+    # ==================== 学术、开源与社区讨论 ====================
+    # Hugging Face 博客 (开源模型与社区动态)
+    "https://huggingface.co/blog/feed.xml",
+    # Papers with Code (最新热门 AI 论文追踪)
+    "https://paperswithcode.com/rss/",
+    # Hacker News (全球程序员与 AI 开发者最活跃的讨论区，通过 RSSHub 代理)
     "https://rsshub.app/hackernews",
 ]
 
