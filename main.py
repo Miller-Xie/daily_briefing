@@ -158,7 +158,7 @@ def send_feishu_message(markdown_content):
 # ==================== 5. 主程序入口 ====================
 if __name__ == "__main__":
     print("1. 开始抓取最新 RSS 资讯...")
-    items = get_latest_articles(hours=24)
+    items = get_latest_articles()
     print(f"抓取完成，共找到 {len(items)} 条新更新。")
 
     if items:
