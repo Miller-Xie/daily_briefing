@@ -46,20 +46,24 @@ WEBHOOK_URL = os.getenv("FEISHU_WEBHOOK_URL")
 SECRET = os.getenv("FEISHU_SECRET")
 
 
-# ==================== 2. RSS 抓取逻辑 ====================
+import datetime
+
+# 定义北京时区 (UTC+8)
+BEIJING_TZ = datetime.timezone(datetime.timedelta(hours=8))
+
 def get_latest_articles():
-    """获取‘前一天’（昨天 00:00:00 到 23:59:59）整天的 RSS 文章列表"""
+    """严格获取‘北京时间昨天’（00:00:00 到 23:59:59）的 RSS 文章列表"""
     articles = []
     
-    # 获取当前的 UTC 时间
-    now_utc = datetime.datetime.now(datetime.timezone.utc)
+    # 1. 获取当前北京时间
+    now_beijing = datetime.datetime.now(BEIJING_TZ)
     
-    # 计算昨天的起始时间 (昨天 00:00:00) 和结束时间 (昨天 23:59:59)
-    yesterday_date = now_utc.date() - datetime.timedelta(days=1)
-    start_of_yesterday = datetime.datetime.combine(yesterday_date, datetime.time.min, tzinfo=datetime.timezone.utc)
-    end_of_yesterday = datetime.datetime.combine(yesterday_date, datetime.time.max, tzinfo=datetime.timezone.utc)
+    # 2. 计算北京时间昨天的日期，并设定北京时间的全天起止范围
+    yesterday_date = now_beijing.date() - datetime.timedelta(days=1)
+    start_of_yesterday = datetime.datetime.combine(yesterday_date, datetime.time.min, tzinfo=BEIJING_TZ)
+    end_of_yesterday = datetime.datetime.combine(yesterday_date, datetime.time.max, tzinfo=BEIJING_TZ)
     
-    print(f"正在抓取 {yesterday_date} 全天的资讯...")
+    print(f"正在抓取北京时间 {yesterday_date} 全天的资讯...")
 
     for feed_url in RSS_FEEDS:
         try:
@@ -67,10 +71,12 @@ def get_latest_articles():
             for entry in feed.entries:
                 published_parsed = entry.get("published_parsed") or entry.get("updated_parsed")
                 if published_parsed:
-                    published_dt = datetime.datetime(*published_parsed[:6], tzinfo=datetime.timezone.utc)
+                    # feedparser 解析出来的时间通常是 UTC 时间，将其转换为北京时间进行对比
+                    published_dt_utc = datetime.datetime(*published_parsed[:6], tzinfo=datetime.timezone.utc)
+                    published_dt_beijing = published_dt_utc.astimezone(BEIJING_TZ)
                     
-                    # 检查文章发布时间是否严格落在“昨天”的范围内
-                    if start_of_yesterday <= published_dt <= end_of_yesterday:
+                    # 检查文章发布时间是否严格落在“北京时间昨天”的范围内
+                    if start_of_yesterday <= published_dt_beijing <= end_of_yesterday:
                         articles.append({
                             "title": entry.title,
                             "link": entry.link,
