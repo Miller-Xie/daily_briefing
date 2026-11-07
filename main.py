@@ -25,11 +25,19 @@ SECRET = os.getenv("FEISHU_SECRET")
 
 
 # ==================== 2. RSS 抓取逻辑 ====================
-def get_latest_articles(hours=24):
-    """获取过去 24 小时内的 RSS 文章列表"""
+def get_latest_articles():
+    """获取‘前一天’（昨天 00:00:00 到 23:59:59）整天的 RSS 文章列表"""
     articles = []
-    now = datetime.datetime.now(datetime.timezone.utc)
-    threshold = now - datetime.timedelta(hours=hours)
+    
+    # 获取当前的 UTC 时间
+    now_utc = datetime.datetime.now(datetime.timezone.utc)
+    
+    # 计算昨天的起始时间 (昨天 00:00:00) 和结束时间 (昨天 23:59:59)
+    yesterday_date = now_utc.date() - datetime.timedelta(days=1)
+    start_of_yesterday = datetime.datetime.combine(yesterday_date, datetime.time.min, tzinfo=datetime.timezone.utc)
+    end_of_yesterday = datetime.datetime.combine(yesterday_date, datetime.time.max, tzinfo=datetime.timezone.utc)
+    
+    print(f"正在抓取 {yesterday_date} 全天的资讯...")
 
     for feed_url in RSS_FEEDS:
         try:
@@ -38,7 +46,9 @@ def get_latest_articles(hours=24):
                 published_parsed = entry.get("published_parsed") or entry.get("updated_parsed")
                 if published_parsed:
                     published_dt = datetime.datetime(*published_parsed[:6], tzinfo=datetime.timezone.utc)
-                    if published_dt > threshold:
+                    
+                    # 检查文章发布时间是否严格落在“昨天”的范围内
+                    if start_of_yesterday <= published_dt <= end_of_yesterday:
                         articles.append({
                             "title": entry.title,
                             "link": entry.link,
@@ -46,8 +56,8 @@ def get_latest_articles(hours=24):
                         })
         except Exception as e:
             print(f"解析 RSS 发生错误 ({feed_url}): {e}")
+            
     return articles
-
 
 # ==================== 3. 大模型摘要生成逻辑 ====================
 def summarize_with_llm(articles):
